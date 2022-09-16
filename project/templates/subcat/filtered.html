@@ -1,0 +1,138 @@
+{% extends 'flatpages/default.html' %}
+
+{% block title %}
+Новости
+{% endblock title %}
+{% load custom_tags %}
+{% load custom_filters %}
+
+{% block content %}
+
+
+<style>
+    .news {
+        display: inline-block;
+        margin: 0 10px 10px 0; /* Отступы */
+        padding: 10px 0; /* Поля сверху и снизу */
+        width: 60%; /* Ширина */
+        }
+    .new2 {
+        display: inline-block;
+        margin: 0 10px 10px 0; /* Отступы */
+        padding: 10px 0; /* Поля сверху и снизу */
+        width: 60%; /* Ширина */
+        text-align: left;
+        }
+    .str {
+        display: block;
+        text-align: left;
+        }
+    .grey {
+        color: grey;
+        text-align: left;
+        }
+    A {
+        text-decoration: none; /* Убирает подчеркивание для ссылок */
+        color: black;
+        }
+    A:hover {
+        text-decoration: underline; /* Добавляем подчеркивание при наведении курсора на ссылку */
+        color: grey;
+        }
+    .top { border-top:1px solid grey;}
+</style>
+
+<h4>
+    Найдено новостей {{filter.qs|length}} по запросу:
+    <span> {{ name }} </span>
+</h4>
+
+{% if name.id %}
+<div class="new2">
+  <strong>
+    Подписаться на
+    <em> {{ name }} </em>?
+  </strong>
+  <a href="{% url 'subscr_category' name.id %}">
+    <button>
+      Подписаться
+    </button>
+  </a>
+</div>
+{% endif %}
+<table>
+    {% for new in news %}
+    <tr>
+        <td class="top">
+            <div class="news">
+                <strong class="str">
+                    <a href="{% url 'new' new.id %}"> {{ new.title|censor }} </a>
+                </strong>
+
+                <div class="str">
+                    <small>
+                        <a href="#"> {{ new.get_type_display }} </a> -
+                        {% for category in new.category.all %}
+                            <a href="{% url 'post_category' category.id %}"> {{ category }} </a>
+                        {% endfor %}
+                    </small>
+                </div>
+
+                <div class="str">
+                    <small>
+                        <a href="#"> {{ new.author.username }} </a> - {{ new.date|date:'d/m/Y' }}
+                    </small>
+                </div>
+            </div>
+        </td>
+        <td class="top">
+            <div class="news">
+                <div class="grey">
+                    {{ new.text|truncatechars:150 }}
+                </div>
+                <p>
+                <div class="str">
+                <sub>
+                    {% if new.type == 'NEWS' %}
+                        <a href="{% url 'new_update' new.id %}"><u> Редактировать </u></a>
+                        |
+                        <a href="{% url 'new_delete' new.id %}"><u> Удалить </u></a>
+                    {% else %}
+                        <a href="{% url 'article_update' new.id %}"><u> Редактировать </u></a>
+                        |
+                        <a href="{% url 'article_delete' new.id %}"><u> Удалить </u></a>
+                    {% endif %}
+                </sub>
+                </div>
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div>
+
+{% if is_paginated %}
+    {% if page_obj.has_previous %}
+        <a href="?{% url_replace page=1 %}">1</a>
+        {% if page_obj.previous_page_number != 1 %}
+            <a href="?{% url_replace page=page_obj.previous_page_number %}"><<<</a>
+            ...
+            <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+        {% endif %}
+    {% endif %}
+
+    {{ page_obj.number }}
+
+    {% if page_obj.has_next %}
+        <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+        {% if paginator.num_pages != page_obj.next_page_number %}
+            ...
+            <a href="?{% url_replace page=page_obj.next_page_number %}">>>></a>
+            <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+        {% endif %}
+    {% endif %}
+{% endif %}
+</div>
+
+{% endblock content %}
